@@ -55,7 +55,7 @@ public class PxgridControl {
 		String path = https.getURL().getPath();
 		String urlSuffix = path.substring(path.lastIndexOf('/') + 1);
 		logger.info("{} request={}", urlSuffix, gson.toJson(request));
-		
+
 		OutputStreamWriter out = new OutputStreamWriter(https.getOutputStream());
 		gson.toJson(request, out);
 		out.flush();

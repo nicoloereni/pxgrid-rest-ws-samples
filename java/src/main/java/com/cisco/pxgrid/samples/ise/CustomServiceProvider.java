@@ -54,41 +54,41 @@ public class CustomServiceProvider {
 
 		// AccountActivate
 		PxgridControl control = new PxgridControl(config);
-		while (control.accountActivate() != AccountState.ENABLED) {
-			Thread.sleep(60000);
-		}
+//		while (control.accountActivate() != AccountState.ENABLED) {
+//			Thread.sleep(60000);
+//		}
 		logger.info("pxGrid controller version={}", control.getControllerVersion());
 
 		// pxGrid ServiceRegister
-		Map<String, String> sessionProperties = new HashMap<>();
-		sessionProperties.put("wsPubsubService", "com.cisco.ise.pubsub");
-		sessionProperties.put("customTopic", "/topic/com.example.custom");
-		ServiceRegisterResponse response = control.serviceRegister("com.example.custom", sessionProperties);
-		String registrationId = response.getId();
-		long reregisterTimeMillis = response.getReregisterTimeMillis();
-
-		// Schedule pxGrid ServiceReregister
-		executor.scheduleWithFixedDelay(() -> {
-			try {
-				control.serviceReregister(registrationId);
-			} catch (IOException e) {
-				logger.error("Reregister failure");
-			}
-		}, reregisterTimeMillis, reregisterTimeMillis, TimeUnit.MILLISECONDS);
+//		Map<String, String> sessionProperties = new HashMap<>();
+//		sessionProperties.put("wsPubsubService", "com.cisco.ise.pubsub");
+//		sessionProperties.put("customTopic", "/topic/com.example.custom");
+//		ServiceRegisterResponse response = control.serviceRegister("com.example.custom", sessionProperties);
+//		String registrationId = response.getId();
+//		long reregisterTimeMillis = response.getReregisterTimeMillis();
+//
+//		// Schedule pxGrid ServiceReregister
+//		executor.scheduleWithFixedDelay(() -> {
+//			try {
+//				control.serviceReregister(registrationId);
+//			} catch (IOException e) {
+//				logger.error("Reregister failure");
+//			}
+//		}, reregisterTimeMillis, reregisterTimeMillis, TimeUnit.MILLISECONDS);
 
 		// pxGrid ServiceLookup for pubsub service
-		Service[] services = control.serviceLookup("com.cisco.ise.pubsub");
-		if (services.length == 0) {
-			logger.info("Pubsub service unavailabe");
-			return;
-		}
+//		Service[] services = control.serviceLookup("com.cisco.ise.pubsub");
+//		if (services.length == 0) {
+//			logger.info("Pubsub service unavailabe");
+//			return;
+//		}
 		// Use first service
-		Service wsPubsubService = services[0];
-		String wsURL = wsPubsubService.getProperties().get("wsUrl");
+//		Service wsPubsubService = services[0];
+		String wsURL = "wss://int-nac-ise2.intra.nozominetworks.com:8910/pxgrid/ise/pubsub";
 		logger.info("wsUrl={}", wsURL);
 
 		// pxGrid AccessSecret
-		String secret = control.getAccessSecret(wsPubsubService.getNodeName());
+		String secret = "L9XW8VLVyWnjAhUZ";
 
 		// Setup WebSocket client
 		ClientManager client = ClientManager.createClient();
@@ -108,7 +108,7 @@ public class CustomServiceProvider {
 		// STOMP send periodically
 		executor.scheduleWithFixedDelay(() -> {
 			try {
-				endpoint.publish("/topic/com.example.custom", "custom data".getBytes());
+				endpoint.publish("/topic/com.cisco.endpoint.asset", "custom data".getBytes());
 			} catch (IOException e) {
 				logger.error("Publish failure");
 			}
@@ -117,7 +117,7 @@ public class CustomServiceProvider {
 		SampleHelper.prompt("press <enter> to disconnect...");
 
 		// pxGrid ServerUnregister
-		control.unregisterService(registrationId);
+		control.unregisterService("1a14d4c5-74ee-48d4-bc43-80f38010798b");
 		
 		// Stop executor
 		executor.shutdown();
